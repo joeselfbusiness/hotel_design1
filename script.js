@@ -11,9 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Hide loader after minimum time or when everything is loaded
   const hideLoader = () => {
-    loader.classList.add('hidden');
-    // Trigger initial animations after loader hides
-    setTimeout(initRevealAnimations, 500);
+    if (loader) {
+      loader.classList.add('hidden');
+      // Trigger initial animations after loader hides
+      setTimeout(initRevealAnimations, 500);
+    }
   };
 
   // Wait for window load but with a fallback timeout
@@ -38,10 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Handle Back to Top button visibility
     const backToTop = document.getElementById('backToTop');
-    if (window.scrollY > 500) {
-      backToTop.classList.add('visible');
-    } else {
-      backToTop.classList.remove('visible');
+    if (backToTop) {
+      if (window.scrollY > 500) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
     }
   };
 
@@ -49,18 +53,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Mobile menu toggle
   const toggleMenu = () => {
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('open');
-    const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
-    hamburger.setAttribute('aria-expanded', !isExpanded);
+    if (hamburger && navLinks) {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('open');
+      const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+      hamburger.setAttribute('aria-expanded', !isExpanded);
+    }
   };
 
-  hamburger.addEventListener('click', toggleMenu);
+  if (hamburger) {
+    hamburger.addEventListener('click', toggleMenu);
+  }
 
   // Close mobile menu when link is clicked
   navLinkItems.forEach(link => {
     link.addEventListener('click', () => {
-      if (navLinks.classList.contains('open')) {
+      if (navLinks && navLinks.classList.contains('open')) {
         toggleMenu();
       }
     });
@@ -131,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================
   const createParticles = () => {
     const container = document.getElementById('heroParticles');
+    if (!container) return;
+    
     const particleCount = 20;
 
     for (let i = 0; i < particleCount; i++) {
@@ -159,80 +169,90 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. TESTIMONIALS CAROUSEL
   // =========================================================
   const track = document.getElementById('testimonialsTrack');
-  const cards = Array.from(document.querySelectorAll('.testimonial-card'));
   const dotsContainer = document.getElementById('carouselDots');
-  let currentIndex = 0;
   
-  // Calculate cards per view based on window width
-  const getCardsPerView = () => {
-    if (window.innerWidth <= 768) return 1;
-    if (window.innerWidth <= 1024) return 2;
-    return 3;
-  };
+  if (track && dotsContainer) {
+    const cards = Array.from(document.querySelectorAll('.testimonial-card'));
+    let currentIndex = 0;
+    
+    // Calculate cards per view based on window width
+    const getCardsPerView = () => {
+      if (window.innerWidth <= 768) return 1;
+      if (window.innerWidth <= 1024) return 2;
+      return 3;
+    };
 
-  const updateCarousel = () => {
-    const cardsPerView = getCardsPerView();
-    const maxIndex = Math.max(0, cards.length - cardsPerView);
-    
-    // Ensure index is within bounds
-    currentIndex = Math.min(currentIndex, maxIndex);
-    
-    // Calculate gap dynamically (28px matches CSS)
-    const gap = window.innerWidth <= 768 ? 0 : 28;
-    const cardWidth = cards[0].offsetWidth;
-    const moveAmount = (cardWidth + gap) * currentIndex;
-    
-    track.style.transform = `translateX(-${moveAmount}px)`;
-    
-    // Update dots
-    Array.from(dotsContainer.children).forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentIndex);
-    });
-  };
-
-  // Create dots
-  const createDots = () => {
-    dotsContainer.innerHTML = '';
-    const cardsPerView = getCardsPerView();
-    const maxIndex = Math.max(0, cards.length - cardsPerView);
-    
-    for (let i = 0; i <= maxIndex; i++) {
-      const dot = document.createElement('button');
-      dot.className = `carousel-dot ${i === currentIndex ? 'active' : ''}`;
-      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-      dot.addEventListener('click', () => {
-        currentIndex = i;
-        updateCarousel();
+    const updateCarousel = () => {
+      const cardsPerView = getCardsPerView();
+      const maxIndex = Math.max(0, cards.length - cardsPerView);
+      
+      // Ensure index is within bounds
+      currentIndex = Math.min(currentIndex, maxIndex);
+      
+      // Calculate gap dynamically (28px matches CSS)
+      const gap = window.innerWidth <= 768 ? 0 : 28;
+      const cardWidth = cards[0].offsetWidth;
+      const moveAmount = (cardWidth + gap) * currentIndex;
+      
+      track.style.transform = `translateX(-${moveAmount}px)`;
+      
+      // Update dots
+      Array.from(dotsContainer.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
       });
-      dotsContainer.appendChild(dot);
-    }
-  };
+    };
 
-  // Global functions for buttons
-  window.carouselNext = () => {
-    const maxIndex = Math.max(0, cards.length - getCardsPerView());
-    if (currentIndex < maxIndex) {
-      currentIndex++;
-      updateCarousel();
-    }
-  };
+    // Create dots
+    const createDots = () => {
+      dotsContainer.innerHTML = '';
+      const cardsPerView = getCardsPerView();
+      const maxIndex = Math.max(0, cards.length - cardsPerView);
+      
+      for (let i = 0; i <= maxIndex; i++) {
+        const dot = document.createElement('button');
+        dot.className = `carousel-dot ${i === currentIndex ? 'active' : ''}`;
+        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        dot.addEventListener('click', () => {
+          currentIndex = i;
+          updateCarousel();
+        });
+        dotsContainer.appendChild(dot);
+      }
+    };
 
-  window.carouselPrev = () => {
-    if (currentIndex > 0) {
-      currentIndex--;
-      updateCarousel();
-    }
-  };
+    // Global functions for buttons
+    window.carouselNext = () => {
+      const maxIndex = Math.max(0, cards.length - getCardsPerView());
+      if (currentIndex < maxIndex) {
+        currentIndex++;
+        updateCarousel();
+      } else {
+        currentIndex = 0; // loop back
+        updateCarousel();
+      }
+    };
 
-  // Initialize carousel
-  createDots();
-  window.addEventListener('resize', () => {
+    window.carouselPrev = () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCarousel();
+      } else {
+        const maxIndex = Math.max(0, cards.length - getCardsPerView());
+        currentIndex = maxIndex;
+        updateCarousel();
+      }
+    };
+
+    // Initialize carousel
     createDots();
-    updateCarousel();
-  });
+    window.addEventListener('resize', () => {
+      createDots();
+      updateCarousel();
+    });
 
-  // Auto-play (optional)
-  // setInterval(window.carouselNext, 5000);
+    // Auto-play
+    setInterval(window.carouselNext, 5000);
+  }
 
   // =========================================================
   // 7. LIGHTBOX GALLERY
@@ -243,42 +263,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const galleryItems = document.querySelectorAll('.gallery-item img');
   let currentImageIndex = 0;
 
-  const galleryData = Array.from(galleryItems).map(img => ({
-    src: img.src,
-    caption: img.nextElementSibling.querySelector('.gallery-caption').textContent
-  }));
+  if (lightbox && lightboxImg && lightboxCaption && galleryItems.length > 0) {
+    const galleryData = Array.from(galleryItems).map(img => ({
+      src: img.src,
+      caption: img.nextElementSibling.querySelector('.gallery-caption').textContent
+    }));
 
-  window.openLightbox = (index) => {
-    currentImageIndex = index;
-    lightboxImg.src = galleryData[index].src;
-    lightboxCaption.textContent = galleryData[index].caption;
-    lightbox.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
-  };
+    window.openLightbox = (index) => {
+      currentImageIndex = index;
+      lightboxImg.src = galleryData[index].src;
+      lightboxCaption.textContent = galleryData[index].caption;
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    };
 
-  window.closeLightbox = () => {
-    lightbox.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Restore scrolling
-  };
+    window.closeLightbox = () => {
+      lightbox.style.display = 'none';
+      document.body.style.overflow = 'auto'; // Restore scrolling
+    };
 
-  window.lightboxNext = () => {
-    currentImageIndex = (currentImageIndex + 1) % galleryData.length;
-    window.openLightbox(currentImageIndex);
-  };
+    window.lightboxNext = () => {
+      currentImageIndex = (currentImageIndex + 1) % galleryData.length;
+      window.openLightbox(currentImageIndex);
+    };
 
-  window.lightboxPrev = () => {
-    currentImageIndex = (currentImageIndex - 1 + galleryData.length) % galleryData.length;
-    window.openLightbox(currentImageIndex);
-  };
+    window.lightboxPrev = () => {
+      currentImageIndex = (currentImageIndex - 1 + galleryData.length) % galleryData.length;
+      window.openLightbox(currentImageIndex);
+    };
 
-  // Keyboard navigation for lightbox
-  document.addEventListener('keydown', (e) => {
-    if (lightbox.style.display === 'flex') {
-      if (e.key === 'Escape') window.closeLightbox();
-      if (e.key === 'ArrowRight') window.lightboxNext();
-      if (e.key === 'ArrowLeft') window.lightboxPrev();
-    }
-  });
+    // Keyboard navigation for lightbox
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'Escape') window.closeLightbox();
+        if (e.key === 'ArrowRight') window.lightboxNext();
+        if (e.key === 'ArrowLeft') window.lightboxPrev();
+      }
+    });
+  }
 
   // =========================================================
   // 8. BOOKING FORM VALIDATION
@@ -436,8 +458,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(modalRef) modalRef.textContent = ref;
         
         // Show modal and reset form
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
         form.reset();
         
         // Reset custom dates
@@ -455,8 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.form-input').forEach(input => {
     input.addEventListener('input', () => {
       if (input.classList.contains('error')) {
-        const errorId = input.id.replace('guest', '').replace('check', 'check').toLowerCase() + 'Error';
-        // Handle specific naming cases
         let finalErrorId = '';
         if (input.id === 'guestName') finalErrorId = 'nameError';
         else if (input.id === 'guestEmail') finalErrorId = 'emailError';
